@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>archiveVersion</key>
+    <string>1</string>
+    <key>classes</key>
+    <dict/>
+    <key>objectVersion</key>
+    <string>56</string>
+    <key>objects</key>
+    <dict>
+        <key>0123456789ABCDEF0123456789ABCDEF</key>
+        <dict>
+            <key>isa</key>
+            <string>PBXProject</string>
+            <key>attributes</key>
+            <dict>
+                <key>BuildIndependentTargetsInParallel</key>
+                <string>1</string>
+                <key>LastSwiftUpdateCheck</key>
+                <string>1500</string>
+                <key>LastUpgradeCheck</key>
+                <string>1500</string>
+            </dict>
+            <key>buildConfigurationList</key>
+            <string>FEDCBA9876543210FEDCBA9876543210</string>
+            <key>compatibilityVersion</key>
+            <string>Xcode 14.0</string>
+            <key>developmentRegion</key>
+            <string>en</string>
+            <key>hasScannedForEncodings</key>
+            <string>0</string>
+            <key>knownRegions</key>
+            <array>
+                <string>en</string>
+                <string>Base</string>
+            </array>
+            <key>mainGroup</key>
+            <string>1111111111111111111111111111111</string>
+            <key>productRefGroup</key>
+            <string>2222222222222222222222222222222</string>
+            <key>projectDirPath</key>
+            <string></string>
+            <key>projectRoot</key>
+            <string></string>
+            <key>targets</key>
+            <array>
+                <string>3333333333333333333333333333333</string>
+            </array>
+        </dict>
+    </dict>
+    <key>rootObject</key>
+    <string>0123456789ABCDEF0123456789ABCDEF</string>
+</dict>
+</plist>

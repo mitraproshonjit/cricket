@@ -1,0 +1,89 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "BallEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "innings_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "ball_sequence",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Innings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "match_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "MatchTeams",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "match_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "team",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "pool_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "name",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "PoolMemberships",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "pool_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "PoolMemberships",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "pool_id",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

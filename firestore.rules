@@ -1,0 +1,203 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserId() {
+      return request.auth.uid;
+    }
+    
+    function isResourceOwner(userId) {
+      return getUserId() == userId;
+    }
+    
+    function getUserPoolMembership(poolId) {
+      return get(/databases/$(database)/documents/PoolMemberships/$(getUserId() + '_' + poolId));
+    }
+    
+    function hasPoolRole(poolId, roles) {
+      let membership = getUserPoolMembership(poolId);
+      return membership != null && membership.data.role in roles;
+    }
+    
+    function isPoolAdmin(poolId) {
+      return hasPoolRole(poolId, ['admin']);
+    }
+    
+    function isPoolModerator(poolId) {
+      return hasPoolRole(poolId, ['admin', 'moderator']);
+    }
+    
+    function isPoolMember(poolId) {
+      return hasPoolRole(poolId, ['admin', 'moderator', 'user']);
+    }
+    
+    function canManagePlayers(poolId) {
+      return hasPoolRole(poolId, ['admin', 'moderator']);
+    }
+    
+    function canManageUsers(poolId) {
+      return hasPoolRole(poolId, ['admin']);
+    }
+    
+    function isMatchScorer(matchId) {
+      let match = get(/databases/$(database)/documents/Matches/$(matchId));
+      return match != null && match.data.current_scorer_id == getUserId();
+    }
+    
+    function isInMatchPool(matchId) {
+      let match = get(/databases/$(database)/documents/Matches/$(matchId));
+      return match != null && isPoolMember(match.data.pool_id);
+    }
+    
+    // Users collection - users can only read/write their own document
+    match /Users/{userId} {
+      allow read, write: if isAuthenticated() && isResourceOwner(userId);
+    }
+    
+    // PlayerPools collection
+    match /PlayerPools/{poolId} {
+      // Pool members can read pool info
+      allow read: if isAuthenticated() && isPoolMember(poolId);
+      
+      // Only admins can create pools (done in code, not directly by users)
+      allow create: if false;
+      
+      // Only pool admins can update pool info
+      allow update: if isAuthenticated() && isPoolAdmin(poolId);
+      
+      // Only pool admins can delete pools
+      allow delete: if isAuthenticated() && isPoolAdmin(poolId);
+    }
+    
+    // PoolMemberships collection
+    match /PoolMemberships/{membershipId} {
+      // Pool members can read all memberships in their pools
+      allow read: if isAuthenticated() && 
+                     exists(/databases/$(database)/documents/PoolMemberships/$(getUserId() + '_' + resource.data.pool_id));
+      
+      // Only admins can create memberships (inviting users)
+      allow create: if isAuthenticated() && isPoolAdmin(resource.data.pool_id);
+      
+      // Only admins can update roles, users can't change their own roles
+      allow update: if isAuthenticated() && isPoolAdmin(resource.data.pool_id);
+      
+      // Only admins can remove memberships
+      allow delete: if isAuthenticated() && isPoolAdmin(resource.data.pool_id);
+    }
+    
+    // Players collection
+    match /Players/{playerId} {
+      // Pool members can read players in their pools
+      allow read: if isAuthenticated() && isPoolMember(resource.data.pool_id);
+      
+      // Only admins/moderators can add players
+      allow create: if isAuthenticated() && canManagePlayers(resource.data.pool_id);
+      
+      // Only admins/moderators can update player info
+      allow update: if isAuthenticated() && canManagePlayers(resource.data.pool_id);
+      
+      // Only admins/moderators can delete players
+      allow delete: if isAuthenticated() && canManagePlayers(resource.data.pool_id);
+    }
+    
+    // PlayerStats collection
+    match /PlayerStats/{statsId} {
+      // Pool members can read stats for players in their pools
+      allow read: if isAuthenticated() && 
+                     exists(/databases/$(database)/documents/Players/$(resource.data.player_id)) &&
+                     isPoolMember(get(/databases/$(database)/documents/Players/$(resource.data.player_id)).data.pool_id);
+      
+      // Only Cloud Functions can write stats
+      allow write: if false;
+    }
+    
+    // Matches collection
+    match /Matches/{matchId} {
+      // Pool members can read matches in their pools
+      allow read: if isAuthenticated() && isPoolMember(resource.data.pool_id);
+      
+      // Pool members can create matches
+      allow create: if isAuthenticated() && 
+                       isPoolMember(resource.data.pool_id) &&
+                       resource.data.created_by == getUserId();
+      
+      // Only current scorer can update match (for transferring scorer)
+      allow update: if isAuthenticated() && isMatchScorer(matchId);
+      
+      // Only match creator or pool admin can delete
+      allow delete: if isAuthenticated() && 
+                       (resource.data.created_by == getUserId() || isPoolAdmin(resource.data.pool_id));
+    }
+    
+    // MatchTeams collection
+    match /MatchTeams/{teamId} {
+      // Pool members can read team info for matches in their pools
+      allow read: if isAuthenticated() && isInMatchPool(resource.data.match_id);
+      
+      // Pool members can add/modify teams during match setup
+      allow create, update: if isAuthenticated() && 
+                               isInMatchPool(resource.data.match_id);
+      
+      // Pool members can remove players from teams
+      allow delete: if isAuthenticated() && isInMatchPool(resource.data.match_id);
+    }
+    
+    // Innings collection
+    match /Innings/{inningsId} {
+      // Pool members can read innings for matches in their pools
+      allow read: if isAuthenticated() && isInMatchPool(resource.data.match_id);
+      
+      // Only current match scorer can create/update innings
+      allow create, update: if isAuthenticated() && isMatchScorer(resource.data.match_id);
+      
+      // No deletion of innings allowed
+      allow delete: if false;
+    }
+    
+    // BallEvents collection
+    match /BallEvents/{ballId} {
+      // Pool members can read ball events for matches in their pools
+      allow read: if isAuthenticated() && 
+                     exists(/databases/$(database)/documents/Innings/$(resource.data.innings_id)) &&
+                     isInMatchPool(get(/databases/$(database)/documents/Innings/$(resource.data.innings_id)).data.match_id);
+      
+      // Only current match scorer can create ball events
+      allow create: if isAuthenticated() && 
+                       exists(/databases/$(database)/documents/Innings/$(resource.data.innings_id)) &&
+                       isMatchScorer(get(/databases/$(database)/documents/Innings/$(resource.data.innings_id)).data.match_id);
+      
+      // Only current match scorer can delete ball events (for undo)
+      allow delete: if isAuthenticated() && 
+                       exists(/databases/$(database)/documents/Innings/$(resource.data.innings_id)) &&
+                       isMatchScorer(get(/databases/$(database)/documents/Innings/$(resource.data.innings_id)).data.match_id);
+      
+      // No updates to ball events allowed
+      allow update: if false;
+    }
+    
+    // MatchTransfers collection
+    match /MatchTransfers/{transferId} {
+      // Only involved users can read transfer requests
+      allow read: if isAuthenticated() && 
+                     (resource.data.from_user_id == getUserId() || resource.data.to_user_id == getUserId());
+      
+      // Only current match scorer can create transfer requests
+      allow create: if isAuthenticated() && 
+                       resource.data.from_user_id == getUserId() &&
+                       isMatchScorer(resource.data.match_id);
+      
+      // Only target user can accept transfer
+      allow update: if isAuthenticated() && 
+                       resource.data.to_user_id == getUserId() &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['accepted', 'responded_at']);
+      
+      // No deletion of transfer records
+      allow delete: if false;
+    }
+  }
+}
