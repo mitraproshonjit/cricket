@@ -6,133 +6,254 @@ struct PoolDashboardView: View {
     @State private var showingCreatePool = false
     @State private var showingPoolManagement = false
     @State private var showingNewMatch = false
+    @State private var animateCards = false
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
-                if poolManager.currentPool == nil {
-                    // No pool state
-                    VStack(spacing: 20) {
-                        Image(systemName: "person.3.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(.gray)
-                        
-                        Text("No Player Pool")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                        
-                        Text("Create a new pool or get invited to an existing one to start scoring matches.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                        
-                        Button("Create New Pool") {
-                            showingCreatePool = true
-                        }
-                        .buttonStyle(.borderedProminent)
-                    }
-                } else {
-                    // Pool exists
-                    ScrollView {
-                        VStack(spacing: 20) {
-                            // Pool Header
-                            VStack(spacing: 8) {
-                                Text(poolManager.currentPool?.poolName ?? "Pool")
-                                    .font(.title)
-                                    .fontWeight(.bold)
+            ZStack {
+                // Dynamic background
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.05, green: 0.1, blue: 0.15),
+                        Color(red: 0.08, green: 0.18, blue: 0.25),
+                        Color(red: 0.12, green: 0.25, blue: 0.35)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+                
+                // Floating background elements
+                Circle()
+                    .fill(EmotionalGradient.cricket.opacity(0.08))
+                    .frame(width: 250)
+                    .blur(radius: 60)
+                    .offset(x: 150, y: -300)
+                    .emotionalPulse()
+                
+                Circle()
+                    .fill(EmotionalGradient.ocean.opacity(0.06))
+                    .frame(width: 200)
+                    .blur(radius: 50)
+                    .offset(x: -120, y: 400)
+                    .emotionalPulse()
+                
+                ScrollView {
+                    VStack(spacing: 24) {
+                        if poolManager.currentPool == nil {
+                            // No pool state with liquid glass
+                            VStack(spacing: 24) {
+                                Spacer(minLength: 100)
                                 
-                                HStack {
-                                    Image(systemName: "person.3.fill")
-                                    Text("\(poolManager.players.count) Players")
-                                    Spacer()
-                                    Text(poolManager.currentMembership?.role.displayName ?? "")
-                                        .font(.caption)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(Color.blue.opacity(0.2))
-                                        .cornerRadius(8)
-                                }
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            }
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(12)
-                            
-                            // Quick Actions
-                            LazyVGrid(columns: [
-                                GridItem(.flexible()),
-                                GridItem(.flexible())
-                            ], spacing: 15) {
-                                Button(action: {
-                                    showingNewMatch = true
-                                }) {
-                                    ActionCard(
-                                        icon: "plus.circle.fill",
-                                        title: "New Match",
-                                        subtitle: "Start scoring"
-                                    )
-                                }
-                                
-                                Button(action: {
-                                    showingPoolManagement = true
-                                }) {
-                                    ActionCard(
-                                        icon: "person.3.sequence.fill",
-                                        title: "Manage Pool",
-                                        subtitle: "Players & settings"
-                                    )
-                                }
-                            }
-                            
-                            // Recent Players
-                            if !poolManager.players.isEmpty {
-                                VStack(alignment: .leading, spacing: 12) {
-                                    HStack {
-                                        Text("Players")
-                                            .font(.headline)
-                                        Spacer()
-                                        NavigationLink("View All", destination: PlayerListView())
-                                            .font(.caption)
+                                VStack(spacing: 20) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(EmotionalGradient.neutral.opacity(0.3))
+                                            .frame(width: 100, height: 100)
+                                            .blur(radius: 20)
+                                        
+                                        Image(systemName: "person.3.fill")
+                                            .font(.system(size: 50, weight: .semibold))
+                                            .foregroundStyle(.white.opacity(0.8))
                                     }
                                     
-                                    LazyVGrid(columns: [
-                                        GridItem(.flexible()),
-                                        GridItem(.flexible())
-                                    ], spacing: 10) {
-                                        ForEach(Array(poolManager.players.prefix(4))) { player in
-                                            PlayerCard(player: player)
+                                    VStack(spacing: 12) {
+                                        Text("No Player Pool")
+                                            .font(.cricketHeadline)
+                                            .foregroundStyle(.white)
+                                        
+                                        Text("Create a new pool or get invited to an existing one to start scoring matches.")
+                                            .font(.cricketBody)
+                                            .foregroundStyle(.white.opacity(0.7))
+                                            .multilineTextAlignment(.center)
+                                            .lineLimit(3)
+                                    }
+                                    
+                                    Button("Create New Pool") {
+                                        HapticManager.shared.impact(.medium)
+                                        showingCreatePool = true
+                                    }
+                                    .buttonStyle(LiquidButton(gradient: EmotionalGradient.cricket))
+                                    .padding(.top, 8)
+                                }
+                                .padding(.horizontal, 40)
+                                .padding(.vertical, 40)
+                                .liquidGlass(intensity: 0.4, cornerRadius: 28, borderOpacity: 0.3)
+                                .padding(.horizontal, 20)
+                                
+                                Spacer()
+                            }
+                        } else {
+                            // Pool exists with enhanced liquid glass design
+                            VStack(spacing: 24) {
+                                // Pool Header with animated gradient
+                                VStack(spacing: 16) {
+                                    // Pool name with gradient text
+                                    Text(poolManager.currentPool?.poolName ?? "Pool")
+                                        .font(.cricketTitle)
+                                        .foregroundStyle(
+                                            LinearGradient(
+                                                colors: [.white, .white.opacity(0.9)],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                    
+                                    // Pool stats row
+                                    HStack(spacing: 20) {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "person.3.fill")
+                                                .foregroundStyle(EmotionalGradient.cricket)
+                                            Text("\(poolManager.players.count) Players")
+                                                .font(.cricketBody)
+                                                .foregroundStyle(.white.opacity(0.8))
                                         }
+                                        
+                                        Spacer()
+                                        
+                                        // Role badge with gradient
+                                        Text(poolManager.currentMembership?.role.displayName ?? "")
+                                            .font(.cricketCaption)
+                                            .foregroundStyle(.white)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 6)
+                                            .background(
+                                                Capsule()
+                                                    .fill(EmotionalGradient.cricket.opacity(0.8))
+                                                    .overlay(
+                                                        Capsule()
+                                                            .stroke(.white.opacity(0.3), lineWidth: 1)
+                                                    )
+                                            )
                                     }
                                 }
-                                .padding()
-                                .background(Color(.systemGray6))
-                                .cornerRadius(12)
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 24)
+                                .liquidGlass(intensity: 0.5, cornerRadius: 20, borderOpacity: 0.3)
+                            
+                                // Quick Actions with liquid glass cards
+                                LazyVGrid(columns: [
+                                    GridItem(.flexible()),
+                                    GridItem(.flexible())
+                                ], spacing: 16) {
+                                    LiquidActionCard(
+                                        icon: "plus.circle.fill",
+                                        title: "New Match",
+                                        subtitle: "Start scoring",
+                                        gradient: EmotionalGradient.cricket,
+                                        action: {
+                                            HapticManager.shared.impact(.medium)
+                                            showingNewMatch = true
+                                        }
+                                    )
+                                    .scaleEffect(animateCards ? 1.0 : 0.8)
+                                    .opacity(animateCards ? 1.0 : 0.0)
+                                    .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1), value: animateCards)
+                                    
+                                    LiquidActionCard(
+                                        icon: "person.3.sequence.fill",
+                                        title: "Manage Pool",
+                                        subtitle: "Players & settings",
+                                        gradient: EmotionalGradient.ocean,
+                                        action: {
+                                            HapticManager.shared.impact(.medium)
+                                            showingPoolManagement = true
+                                        }
+                                    )
+                                    .scaleEffect(animateCards ? 1.0 : 0.8)
+                                    .opacity(animateCards ? 1.0 : 0.0)
+                                    .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.2), value: animateCards)
+                                }
+                            
+                                // Recent Players with liquid glass
+                                if !poolManager.players.isEmpty {
+                                    VStack(alignment: .leading, spacing: 16) {
+                                        HStack {
+                                            Text("Players")
+                                                .font(.cricketHeadline)
+                                                .foregroundStyle(.white)
+                                            
+                                            Spacer()
+                                            
+                                            NavigationLink(destination: PlayerListView()) {
+                                                HStack(spacing: 4) {
+                                                    Text("View All")
+                                                        .font(.cricketCaption)
+                                                    Image(systemName: "arrow.right")
+                                                        .font(.cricketCaption)
+                                                }
+                                                .foregroundStyle(EmotionalGradient.cricket)
+                                            }
+                                        }
+                                        
+                                        LazyVGrid(columns: [
+                                            GridItem(.flexible()),
+                                            GridItem(.flexible())
+                                        ], spacing: 12) {
+                                            ForEach(Array(poolManager.players.prefix(4).enumerated()), id: \.element.id) { index, player in
+                                                LiquidPlayerCard(player: player)
+                                                    .scaleEffect(animateCards ? 1.0 : 0.8)
+                                                    .opacity(animateCards ? 1.0 : 0.0)
+                                                    .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.3 + Double(index) * 0.1), value: animateCards)
+                                            }
+                                        }
+                                    }
+                                    .padding(.horizontal, 24)
+                                    .padding(.vertical, 24)
+                                    .liquidGlass(intensity: 0.4, cornerRadius: 20, borderOpacity: 0.25)
+                                }
                             }
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 100)
                         }
-                        .padding()
                     }
                 }
             }
-            .navigationTitle("Cricket Scorer")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("")
+            .navigationBarHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
-                        Button("Profile") {
-                            // Navigate to profile
+                        Button(action: {
+                            HapticManager.shared.selection()
+                        }) {
+                            Label("Profile", systemImage: "person.circle")
                         }
-                        Button("Settings") {
-                            // Navigate to settings
+                        
+                        Button(action: {
+                            HapticManager.shared.selection()
+                        }) {
+                            Label("Settings", systemImage: "gear")
                         }
+                        
                         Divider()
-                        Button("Sign Out") {
+                        
+                        Button(action: {
+                            HapticManager.shared.impact(.light)
                             authManager.signOut()
+                        }) {
+                            Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
                         }
                     } label: {
-                        Image(systemName: "person.circle")
+                        ZStack {
+                            Circle()
+                                .fill(.ultraThinMaterial.opacity(0.8))
+                                .frame(width: 40, height: 40)
+                                .overlay(
+                                    Circle()
+                                        .stroke(.white.opacity(0.3), lineWidth: 1)
+                                )
+                            
+                            Image(systemName: "person.circle.fill")
+                                .font(.system(size: 20, weight: .medium))
+                                .foregroundStyle(.white.opacity(0.9))
+                        }
                     }
+                }
+            }
+            .onAppear {
+                withAnimation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.3)) {
+                    animateCards = true
                 }
             }
             .sheet(isPresented: $showingCreatePool) {
@@ -156,69 +277,130 @@ struct PoolDashboardView: View {
     }
 }
 
-struct ActionCard: View {
+struct LiquidActionCard: View {
     let icon: String
     let title: String
     let subtitle: String
+    let gradient: LinearGradient
+    let action: () -> Void
+    @State private var isPressed = false
     
     var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 30))
-                .foregroundColor(.blue)
-            
-            Text(title)
-                .font(.headline)
-                .foregroundColor(.primary)
-            
-            Text(subtitle)
-                .font(.caption)
-                .foregroundColor(.secondary)
+        Button(action: action) {
+            VStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(gradient.opacity(0.3))
+                        .frame(width: 50, height: 50)
+                        .blur(radius: 8)
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundStyle(.white)
+                }
+                
+                VStack(spacing: 4) {
+                    Text(title)
+                        .font(.cricketSubheadline)
+                        .foregroundStyle(.white)
+                    
+                    Text(subtitle)
+                        .font(.cricketCaption)
+                        .foregroundStyle(.white.opacity(0.7))
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 20)
+            .padding(.horizontal, 16)
         }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+        .buttonStyle(PlainButtonStyle())
+        .liquidCard(isPressed: isPressed)
+        .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                isPressed = pressing
+            }
+        }, perform: {})
     }
 }
 
-struct PlayerCard: View {
+struct LiquidPlayerCard: View {
     let player: Player
+    @State private var isPressed = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 8) {
+            // Player name with gradient
             Text(player.name)
-                .font(.subheadline)
+                .font(.cricketBody)
                 .fontWeight(.medium)
+                .foregroundStyle(.white)
                 .lineLimit(1)
             
-            HStack {
+            // Player attributes
+            VStack(alignment: .leading, spacing: 6) {
                 if let battingHand = player.battingHand {
-                    Text(battingHand == .left ? "LH" : "RH")
-                        .font(.caption2)
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 2)
-                        .background(Color.blue.opacity(0.2))
-                        .cornerRadius(4)
+                    HStack(spacing: 6) {
+                        Image(systemName: "figure.cricket")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(EmotionalGradient.teamA)
+                        
+                        Text(battingHand == .left ? "Left-handed" : "Right-handed")
+                            .font(.cricketCaption)
+                            .foregroundStyle(.white.opacity(0.8))
+                    }
                 }
                 
                 if let bowlingStyle = player.bowlingStyle {
-                    Text(bowlingStyle.rawValue.capitalized)
-                        .font(.caption2)
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 2)
-                        .background(Color.green.opacity(0.2))
-                        .cornerRadius(4)
+                    HStack(spacing: 6) {
+                        Image(systemName: "baseball.fill")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(EmotionalGradient.teamB)
+                        
+                        Text(bowlingStyle.displayName)
+                            .font(.cricketCaption)
+                            .foregroundStyle(.white.opacity(0.8))
+                    }
                 }
                 
-                Spacer()
+                if player.battingHand == nil && player.bowlingStyle == nil {
+                    Text("No details")
+                        .font(.cricketCaption)
+                        .foregroundStyle(.white.opacity(0.5))
+                        .italic()
+                }
             }
         }
-        .padding(8)
-        .background(Color(.systemBackground))
-        .cornerRadius(8)
-        .shadow(color: .black.opacity(0.05), radius: 1, x: 0, y: 1)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial.opacity(0.6))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    .white.opacity(0.3),
+                                    .clear,
+                                    .white.opacity(0.1)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+        )
+        .scaleEffect(isPressed ? 0.95 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
+        .onTapGesture {
+            HapticManager.shared.selection()
+        }
+        .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                isPressed = pressing
+            }
+        }, perform: {})
     }
 }
 

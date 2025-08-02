@@ -9,56 +9,110 @@ struct LiveScoringView: View {
     @State private var showingWicketSheet = false
     @State private var selectedWicketType: WicketType?
     @State private var pendingBallData: PendingBallData?
+    @State private var animateScore = false
     
     var body: some View {
-        VStack {
-            if let match = matchManager.currentMatch {
-                // Match header
-                MatchHeaderView(match: match)
-                
-                if let innings = matchManager.currentInnings {
-                    // Current innings display
-                    CurrentInningsView(innings: innings)
-                        .padding(.horizontal)
-                    
-                    // Batters and bowler
-                    PlayersView(innings: innings, match: match)
-                        .padding(.horizontal)
-                    
-                    // Scoring buttons
-                    if matchManager.canScore {
-                        ScoringButtonsView(
-                            onBallScored: { ballData in
-                                if ballData.isWicket {
-                                    pendingBallData = ballData
-                                    showingWicketSheet = true
-                                } else {
-                                    Task {
-                                        await recordBall(ballData)
-                                    }
-                                }
-                            }
-                        )
-                        .padding(.horizontal)
+        ZStack {
+            // Dynamic cricket field background
+            LinearGradient(
+                colors: [
+                    Color(red: 0.05, green: 0.2, blue: 0.1),
+                    Color(red: 0.08, green: 0.25, blue: 0.15),
+                    Color(red: 0.1, green: 0.3, blue: 0.2)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            
+            // Floating cricket elements
+            Circle()
+                .fill(EmotionalGradient.cricket.opacity(0.06))
+                .frame(width: 300)
+                .blur(radius: 80)
+                .offset(x: -150, y: -400)
+                .emotionalPulse()
+            
+            Circle()
+                .fill(EmotionalGradient.sunset.opacity(0.04))
+                .frame(width: 200)
+                .blur(radius: 60)
+                .offset(x: 180, y: 500)
+                .emotionalPulse()
+            
+            ScrollView {
+                VStack(spacing: 24) {
+                    if let match = matchManager.currentMatch {
+                        // Enhanced match header
+                        LiquidMatchHeaderView(match: match)
                         
-                        // Action buttons
-                        ActionButtonsView()
-                            .padding(.horizontal)
+                        if let innings = matchManager.currentInnings {
+                            // Enhanced current innings display
+                            LiquidCurrentInningsView(innings: innings, animateScore: $animateScore)
+                            
+                            // Enhanced players view
+                            LiquidPlayersView(innings: innings, match: match)
+                            
+                            // Enhanced scoring buttons
+                            if matchManager.canScore {
+                                LiquidScoringButtonsView(
+                                    onBallScored: { ballData in
+                                        HapticManager.shared.impact(.medium)
+                                        if ballData.isWicket {
+                                            pendingBallData = ballData
+                                            showingWicketSheet = true
+                                        } else {
+                                            Task {
+                                                await recordBall(ballData)
+                                                withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                                                    animateScore.toggle()
+                                                }
+                                            }
+                                        }
+                                    }
+                                )
+                                
+                                // Enhanced action buttons
+                                LiquidActionButtonsView()
+                            } else {
+                                // No permission message
+                                VStack(spacing: 12) {
+                                    Image(systemName: "lock.circle.fill")
+                                        .font(.system(size: 40))
+                                        .foregroundStyle(EmotionalGradient.neutral)
+                                    
+                                    Text("You don't have permission to score this match")
+                                        .font(.cricketBody)
+                                        .foregroundStyle(.white.opacity(0.7))
+                                        .multilineTextAlignment(.center)
+                                }
+                                .padding(.horizontal, 32)
+                                .padding(.vertical, 24)
+                                .liquidGlass(intensity: 0.4, cornerRadius: 20, borderOpacity: 0.25)
+                            }
+                            
+                            // Enhanced ball history
+                            LiquidBallHistoryView(ballEvents: matchManager.ballEvents)
+                        } else {
+                            // Enhanced no innings view
+                            LiquidNoInningsView(match: match)
+                        }
                     } else {
-                        Text("You don't have permission to score this match")
-                            .foregroundColor(.secondary)
-                            .padding()
+                        // Loading state
+                        VStack(spacing: 16) {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .scaleEffect(1.5)
+                            
+                            Text("Loading match...")
+                                .font(.cricketBody)
+                                .foregroundStyle(.white.opacity(0.8))
+                        }
+                        .padding(.vertical, 60)
                     }
-                    
-                    // Ball history
-                    BallHistoryView(ballEvents: matchManager.ballEvents)
-                        .padding(.horizontal)
-                } else {
-                    // No innings started
-                    NoInningsView(match: match)
                 }
-            } else {
-                ProgressView("Loading match...")
+                .padding(.horizontal, 20)
+                .padding(.bottom, 100)
             }
         }
         .navigationTitle("Live Scoring")
