@@ -45,13 +45,13 @@ service cloud.firestore {
     }
     
     function isMatchScorer(matchId) {
-      let match = get(/databases/$(database)/documents/Matches/$(matchId));
-      return match != null && match.data.current_scorer_id == getUserId();
+      let matchDoc = get(/databases/$(database)/documents/Matches/$(matchId));
+      return matchDoc != null && matchDoc.data.current_scorer_id == getUserId();
     }
     
     function isInMatchPool(matchId) {
-      let match = get(/databases/$(database)/documents/Matches/$(matchId));
-      return match != null && isPoolMember(match.data.pool_id);
+      let matchDoc = get(/databases/$(database)/documents/Matches/$(matchId));
+      return matchDoc != null && isPoolMember(matchDoc.data.pool_id);
     }
     
     // Users collection - users can only read/write their own document
